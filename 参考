@@ -1,0 +1,67 @@
+import sys
+import time
+import paramiko as pk
+
+class SftpTest(object):
+    def __init__(self, ip, port,  username, password, local_path, remote_path):
+        self.ip = ip
+        self.port = port
+        self.username = username
+        self.password = password
+        self.local_path = local_path
+        self.remote_path = remote_path
+    
+    def translate_byte(self, B):
+        B = float(B)
+        KB = float(1024)
+        MB = float(KB ** 2)
+        GB = float(MB ** 2)
+        TB = float(GB ** 2)
+        if B < KB:
+            return '{} {}'.format(B, 'bytes' if B > 1 else byte)
+        elif KB < B < MB:
+            return '{:.2f} KB'.format(B / KB)
+        elif MB < B < GB:
+            return '{:.2f} MB'.format(B / MB)
+        elif GB < B < TB:
+            return '{:.2f} GB'.format(B / GB)
+        else:
+            return '{:.2f} TB'.format(B / TB)
+    
+    def timer(func):
+        def inside(self):
+            t1 = time.time()
+            func(self)
+            t2 = time.time()
+            print('task time:{:.2f}s'.format(t2 - t1))
+        return inside
+    
+    def call_back(self, curr=100, total=100):
+        bar_length = 100
+        percents = '\033[32;1m%s\033[0m' % round(float(curr) * 100 / float(total), 2)
+        filled = int(bar_length * curr / float(total))
+        bar = '\033[32;1m%s\033[0m' % '=' * filled + '-' * (bar_length - filled)
+        print('translating: [{}] {}% already complete: {}, total: {}\r'.format(bar, percents, self.translate_byte(curr), self.translate_byte(total)), end='')
+        
+    @timer
+    def ftpupload(self):
+        transport = pk.Transport(self.ip, sself.port)
+        try:
+            transport.connect(username=self.username, password=self.password)
+            sftp = pk.SFTPClient.from_transport(transport)
+            print('Begin translating...')
+            sftp.put(self.local_path, self.remote_path, callback=self.call_back)
+            print('\nFinish translating...')
+        except Exception as e:
+            print(str(e))
+        finally:
+            transport.close()
+            
+if __name__ = '__main__':
+    local_path = sys.argv[1]
+    remote_path = sys.argv[2]
+    ftp_obj = SftpTest('8.0.187.145', 22, 'root', '123456', local_path, remote_path)
+    ftp_obj.ftpupload()                             
+————————————————
+版权声明：本文为CSDN博主「~~信我有鬼~~」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/bwz771411855/article/details/107221453
