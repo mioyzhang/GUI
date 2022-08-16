@@ -1,13 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-# @Project : pypj
-# @File    : file_transfer.py
-# @IDE     : PyCharm
-# @Author  : zhang bin
-# @Date    : 2022/8/15 15:00:03
-# @DES     : 
-"""
 import os
 import time
 import math
@@ -18,8 +8,7 @@ from threading import Thread, Event
 
 PORT = 1234
 ACK_PORT = 1235
-BUFFER_SIZE = 1024 * 2
-SEPARATOR = '<SEPARATOR>'
+BUFFER_SIZE = 1024 * 32
 
 positions = []
 file_name = []
@@ -113,6 +102,8 @@ def recv():
         if data.startswith(b'send_'):
             if not recv_file_name:
                 _, recv_file_name, file_size, pos_len = data.decode().split('_')
+                file_size = int(file_size)
+                pos_len = int(pos_len)
                 print('recv {} from {}'.format(recv_file_name, address))
                 sock_ack.sendto('{}_ack'.format(recv_file_name).encode(), ack_address)
                 print('send {}_ack to {}'.format(recv_file_name, ack_address))
@@ -130,6 +121,7 @@ def recv():
         print('recv {}, total {}'.format(pos, len(buf.items())))
 
         if len(buf.keys()) == pos_len:
+            print('传输完成')
             break
 
     sock_r.close()
@@ -153,7 +145,7 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--file', type=str, help=' transfer file')
     args = parser.parse_args()
 
-    path = '/root/pypj/myplot2.png'
+    path = '/root/pypj/test.jpg'
 
     if args.send:
         send(path, args.send)
